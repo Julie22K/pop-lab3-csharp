@@ -18,17 +18,17 @@ namespace pop_lab3
         }
 
 
-        private void Starter(int storageSize, int itemNumbers,int producers_num, int costumers_num)
+        private void Starter(int storageSize, int itemNumbers,int producers_num, int consumer_num)
         {
             Access = new Semaphore(1, 1);
             Full = new Semaphore(storageSize, storageSize);
             Empty = new Semaphore(0, storageSize);
 
             
-            for (int i = 0; i < costumers_num; i++)
+            for (int i = 0; i < consumer_num; i++)
             { 
                 Thread threadConsumer = new Thread(Consumer);
-                threadConsumer.Name = "Costumer#" +i;
+                threadConsumer.Name = "Consumer#" + i;
                 threadConsumer.Start(itemNumbers);
             }
             for (int i = 0; i < producers_num; i++)
@@ -98,3 +98,4 @@ namespace pop_lab3
         }
     }
 }
+s
