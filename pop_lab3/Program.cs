@@ -12,43 +12,45 @@ namespace pop_lab3
         static void Main(string[] args)
         {
             Program program = new Program();
-            program.Starter(3, 10,6,3);
+            program.Starter(4, 20, 6, 4);
 
             Console.ReadKey();
         }
-
-
-        private void Starter(int storageSize, int itemNumbers,int producers_num, int consumer_num)
+        private void Starter(int storageSize, int itemNumbers, int producers_num, int consumer_num)
         {
             Access = new Semaphore(1, 1);
             Full = new Semaphore(storageSize, storageSize);
             Empty = new Semaphore(0, storageSize);
 
-            
+
             for (int i = 0; i < consumer_num; i++)
-            { 
+            {
                 Thread threadConsumer = new Thread(Consumer);
-                threadConsumer.Name = "Consumer#" + (i+1);
-                threadConsumer.Start(itemNumbers);
+                threadConsumer.Name = "Consumer#" + (i + 1);
+                int itemNumbersForOneConsumer = (i != consumer_num - 1) ? itemNumbers / consumer_num : itemNumbers-(i*(itemNumbers / consumer_num)) ;
+               // Console.WriteLine("Consumer#" + itemNumbersForOneConsumer);
+                threadConsumer.Start(itemNumbersForOneConsumer);
             }
+
             for (int i = 0; i < producers_num; i++)
             {
                 Thread threadProducer = new Thread(Producer);
-                threadProducer.Name = "Producer#" + (i+1);
-                threadProducer.Start(itemNumbers);
+                threadProducer.Name = "Producer#" + (i + 1);
+                int itemNumbersForOneProducer = (i != producers_num - 1) ? itemNumbers / producers_num : itemNumbers - (i * (itemNumbers / producers_num));
+                //Console.WriteLine("Producer#" + itemNumbersForOneProducer);
+                threadProducer.Start(itemNumbersForOneProducer);
             }
         }
         private Semaphore Access;
-
         private Semaphore Full;
         private Semaphore Empty;
 
 
-        private int num_of_last_item=0;
-        private List<string> storage= new List<string>();
+        private int num_of_item = 0;
+        private List<string> storage = new List<string>();
         private void Producer(Object itemNumbers)
         {
-            int maxItem = 0;
+            int maxItem = 1;
             if (itemNumbers is int)
             {
                 maxItem = (int)itemNumbers;
@@ -58,25 +60,16 @@ namespace pop_lab3
             {
                 Full.WaitOne();
                 Access.WaitOne();
-                if (num_of_last_item < maxItem)
-                {
-                    storage.Add("item " + num_of_last_item);
-                    Console.WriteLine(Thread.CurrentThread.Name + " added item " + num_of_last_item);
-                    num_of_last_item++;
 
-                    Empty.Release();
-                    Access.Release();
-                }
-                else
-                {
-                    Access.Release();
-                    break;
+                storage.Add("item " + num_of_item);
+                Console.WriteLine(Thread.CurrentThread.Name + " added item " + num_of_item);
+                num_of_item++;
 
-                }
+                Empty.Release();
+                Access.Release();
 
             }
         }
-
         private void Consumer(Object itemNumbers)
         {
             int maxItem = 0;
@@ -86,7 +79,6 @@ namespace pop_lab3
             }
             for (int i = 0; i < maxItem; i++)
             {
-                if (num_of_last_item == maxItem) break;
                 Empty.WaitOne();
                 Thread.Sleep(1000);
                 Access.WaitOne();
@@ -97,6 +89,7 @@ namespace pop_lab3
 
                 Full.Release();
                 Access.Release();
+
 
             }
         }
